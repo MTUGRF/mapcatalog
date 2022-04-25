@@ -68,6 +68,7 @@
 </head>
 
 <body>
+  <div class="calcite-theme-dark">
   <nav class="navbar navbar-expand-md navbar-light bg-light">
   <a class="navbar-brand" href="https://mapgeoasu.github.io/3dexplorer/" target="_blank" rel="noopener">
     <img src="husky.svg" width="50" height="50" class="d-inline-block align-top" alt="">
@@ -88,7 +89,7 @@
 </nav>
   <calcite-shell content-behind class="calcite-tutorial" style="height: auto;margin-top: 56px">
     <calcite-shell-panel slot="primary-panel">
-      <calcite-panel heading="National Park Visitation">
+      <calcite-panel>
         <calcite-block heading="Filters" open>
           <calcite-tooltip-manager slot="control">
             <calcite-action disabled icon="reset" id="control-reset-el"></calcite-action>
@@ -124,6 +125,7 @@
     </calcite-shell-panel>  
 
   </calcite-shell>
+</div>
 
   <div id="viewDiv"></div>
 </body>
