@@ -1,0 +1,312 @@
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Calcite Components: Core concepts</title>
+  <script type="module" src="https://js.arcgis.com/calcite-components/1.0.0-beta.81/calcite.esm.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/1.0.0-beta.81/calcite.css" />
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">  
+  <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+  <script src="https://js.arcgis.com/4.23/"></script>
+  <style>
+    
+    #viewDiv {
+      position: absolute;
+      top: 0;
+      bottom: 0;      
+      padding: 0;
+      margin-top: 56px;          
+      width: 80%;
+      left:  20%;
+    }
+    .navbar {
+      height: 56px;
+    }
+    .navbar-brand {
+      padding: 0 15px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;   
+      color: white !important; 
+    }
+    /*Navbar links*/
+    .navbar-light .navbar-nav .nav-link {
+      color: #d9dde0;
+      font-size: 13px;
+    }
+    .navbar-light .navbar-nav .nav-link:visited {
+      color: #d9dde0;  
+    }
+
+    .navbar-light .navbar-nav .nav-link:hover {
+      color: white;  
+    }
+
+    /*Navbar background color*/
+    .bg-light {
+      background: black !important;
+      border-bottom: solid 2px black;
+    }    
+
+    .calcite-tutorial {
+      --calcite-ui-brand: #039851;
+      --calcite-ui-brand-hover: #008D52;
+    }
+
+    .calcite-tutorial calcite-chip {
+      --calcite-ui-foreground-2: var(--calcite-ui-brand);
+      --calcite-ui-text-1: white;
+      margin-inline-end: .75rem;
+    }  
+    
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-light bg-light">
+  <a class="navbar-brand" href="https://mapgeoasu.github.io/3dexplorer/" target="_blank" rel="noopener">
+    <img src="husky.svg" width="50" height="50" class="d-inline-block align-top" alt="">
+      &nbsp;Geospatial Research Facility Map Catalog
+  </a>
+  <div class="collapse navbar-collapse" id="navbarNav" style="">
+        <ul class="navbar-nav mr-auto">           
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href=" https://geospatial.asu.edu" target="_blank" rel="noopener">Geospatial Research Portal</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://www.mtu.edu/social-sciences/" target="_blank" rel="noopener">Social Sciences</a>
+            </li>           
+        </ul>
+    </div>
+</nav>
+  <calcite-shell content-behind class="calcite-tutorial" style="height: auto;margin-top: 56px">
+    <calcite-shell-panel slot="primary-panel">
+      <calcite-panel heading="National Park Visitation">
+        <calcite-block heading="Filters" open>
+          <calcite-tooltip-manager slot="control">
+            <calcite-action disabled icon="reset" id="control-reset-el"></calcite-action>
+            <calcite-tooltip reference-element="control-reset-el" position="bottom">
+              Reset to defaults
+            </calcite-tooltip>
+          </calcite-tooltip-manager>
+          <calcite-label>
+            Data type, per state
+            <calcite-radio-group id="control-visited-type-el" width="full">
+              <calcite-radio-group-item value="DESC" checked>Most visited</calcite-radio-group-item>
+              <calcite-radio-group-item value="ASC">Least visited</calcite-radio-group-item>
+            </calcite-radio-group>
+          </calcite-label>
+          <calcite-label>
+            Year data to display
+            <calcite-select id="control-year-el">
+              <calcite-option label="Total of all time" value="TOTAL"></calcite-option>
+              <calcite-option label="2018" value="F2018"></calcite-option>
+              <calcite-option label="2019" value="F2019"></calcite-option>
+              <calcite-option label="2020" value="F2020"></calcite-option>
+            </calcite-select>
+          </calcite-label>
+          <calcite-label>
+            Max parks per state
+            <calcite-slider id="control-count-per-state-el" label-ticks ticks="1" min="1" max="5"></calcite-slider>
+          </calcite-label>
+        </calcite-block>
+        <calcite-block collapsible heading="Results" id="result-block">
+          <calcite-list id="result-list"></calcite-list>
+        </calcite-block>
+     
+    </calcite-shell-panel>  
+
+  </calcite-shell>
+
+  <div id="viewDiv"></div>
+</body>
+
+<script>
+
+  require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "esri/symbols/WebStyleSymbol",
+    "esri/Basemap",
+    "esri/rest/support/TopFeaturesQuery",
+    "esri/rest/support/TopFilter",
+    "esri/widgets/Home"
+  ], (Map, MapView, FeatureLayer, WebStyleSymbol, Basemap, TopFeaturesQuery, TopFilter, Home) => (async () => {
+
+    const layer = new FeatureLayer({
+      url:
+        "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/US_National_Parks_Annual_Visitation/FeatureServer/0",
+      outFields: ["*"],
+      renderer: await setRenderer(),
+      popupTemplate: createPopupTemplate()
+    });
+
+    const map = new Map({
+      basemap: "streets-navigation-vector",
+      layers: [layer]
+    });
+
+    const view = new MapView({
+      container: "viewDiv",
+      map: map,
+      center: [-120, 45],
+      zoom: 3
+    });
+
+    let homeWidget = new Home({
+      view: view
+    });
+
+    view.ui.add(homeWidget, "top-right");
+    view.ui.move("zoom", "top-right");
+    const layerView = await view.whenLayerView(layer);
+
+    async function setRenderer() {
+      const symbol = new WebStyleSymbol({
+        name: "park",
+        styleName: "Esri2DPointSymbolsStyle"
+      });
+
+      const cimSymbol = await symbol.fetchCIMSymbol();
+      cimSymbol.data.symbol.symbolLayers[0].size = 24;
+      cimSymbol.data.symbol.symbolLayers[1] = null;
+
+      return {
+        type: "simple",
+        symbol: cimSymbol
+      };
+    }
+
+    function createPopupTemplate() {
+      return {
+        title: "{Park}",
+        content: [{
+          type: "fields",
+          fieldInfos: [{
+            fieldName: "TOTAL",
+            label: "Total visits",
+            format: { digitSeparator: true }
+          }, {
+            fieldName: "F2018",
+            label: "2018",
+            format: { digitSeparator: true }
+          }, {
+            fieldName: "F2019",
+            label: "2019",
+            format: { digitSeparator: true }
+          }, {
+            fieldName: "F2020",
+            label: "2020",
+            format: { digitSeparator: true }
+          }]
+        }]
+      };
+    }
+
+    const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
+    const controlYearEl = document.getElementById("control-year-el");
+    const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
+    const controlResetEl = document.getElementById("control-reset-el");
+
+    controlVisitedTypeEl.addEventListener("calciteRadioGroupChange", async (event) => { orderBy = event.target.value, filterItems() });
+    controlYearEl.addEventListener("calciteSelectChange", async (event) => { year = event.target.value, filterItems() });
+    controlCountPerStateEl.addEventListener("calciteSliderChange", async (event) => { count = event.target.value, filterItems() });
+    controlResetEl.addEventListener("click", async () => resetFilters());
+
+    const countDefault = 1;
+    const orderByDefault = "DESC"
+    const yearDefault = "TOTAL"
+
+    let count = countDefault;
+    let orderBy = orderByDefault;
+    let year = yearDefault;
+
+    async function filterItems() {
+      const query = new TopFeaturesQuery({
+        topFilter: new TopFilter({
+          topCount: count,
+          groupByFields: ["State"],
+          orderByFields: `${year} ${orderBy}`
+        }),
+        orderByFields: `${year} ${orderBy}`,
+        outFields: ["State, TOTAL, F2018, F2019, F2020, Park"],
+        returnGeometry: true,
+        cacheHint: false
+      });
+
+      document.getElementById("result-list").innerHTML = "";
+      document.getElementById("result-block").open = true;
+
+      const results = await layer.queryTopFeatures(query);
+      graphics = results.features;
+
+      graphics.forEach((result, index) => {
+        const attributes = result.attributes;
+        const item = document.createElement("calcite-list-item");
+        const chip = document.createElement("calcite-chip");
+        chip.value = attributes.State;
+        chip.slot = "content-end";
+        chip.scale = "s";
+        chip.innerText = attributes.State;
+        item.label = attributes.Park;
+        item.value = index;
+        item.description = `${attributes[yearDefault].toLocaleString()} visitors`;
+        item.addEventListener("click", () => resultClickHandler(result, index));
+        item.appendChild(chip);
+        document.getElementById("result-list").appendChild(item);
+      });
+
+      query.orderByFields = [""];
+      const objectIds = await layer.queryTopObjectIds(query);
+      layerView.filter = { objectIds };
+
+      determineResetActionState();
+    }
+
+    function resultClickHandler(result, index) {
+      const popup = graphics && graphics[parseInt(index, 10)];
+      if (popup) {
+        view.popup.open({
+          features: [popup],
+          location: result.geometry
+        });
+        view.goTo({ center: [result.geometry.longitude, result.geometry.latitude], zoom: 4 }, { duration: 400 });
+      }
+    }
+
+    function determineResetActionState() {
+      if (count !== countDefault || orderBy !== orderByDefault || year !== yearDefault) {
+        controlResetEl.removeAttribute("disabled");
+        controlResetEl.indicator = true;
+      }
+      else {
+        controlResetEl.disabled = true;
+        controlResetEl.removeAttribute("indicator");
+      }
+    }
+
+    function resetFilters() {
+      count = countDefault;
+      orderBy = orderByDefault;
+      year = yearDefault;
+
+      const activeRadioGroupItem = document.querySelector(`calcite-radio-group-item[value=${orderByDefault}]`)
+      activeRadioGroupItem.checked = true;
+      controlYearEl.value = yearDefault;
+      controlCountPerStateEl.value = countDefault;
+
+      filterItems();
+    }
+    filterItems();
+  })());
+</script>
+
+</html>
