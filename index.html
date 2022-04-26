@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Calcite Components: Core concepts</title>
+  <title>GRF Map Catalog</title>
   <script type="module" src="https://js.arcgis.com/calcite-components/1.0.0-beta.81/calcite.esm.js"></script>
   <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/1.0.0-beta.81/calcite.css" />
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">  
@@ -54,13 +54,14 @@
     }    
 
     .calcite-tutorial {
-      --calcite-ui-brand: #039851;
+      --calcite-ui-brand: #FC0;
       --calcite-ui-brand-hover: #008D52;
     }
 
     .calcite-tutorial calcite-chip {
       --calcite-ui-foreground-2: var(--calcite-ui-brand);
       --calcite-ui-text-1: white;
+      opacity:  0;
       margin-inline-end: .75rem;
     }  
     
@@ -105,12 +106,13 @@
             </calcite-radio-group>
           </calcite-label>
           <calcite-label>
-            Year data to display
+            Select a Theme
             <calcite-select id="control-year-el">
-              <calcite-option label="Total of all time" value="TOTAL"></calcite-option>
-              <calcite-option label="2018" value="F2018"></calcite-option>
-              <calcite-option label="2019" value="F2019"></calcite-option>
-              <calcite-option label="2020" value="F2020"></calcite-option>
+              <calcite-option label="All" value="1900"></calcite-option>
+              <calcite-option label="Land Use" value="Land Use"></calcite-option>
+              <calcite-option label="Mining Maps" value="Mining Maps"></calcite-option>
+              <calcite-option label="Nautical Charts" value="Nautical"></calcite-option>
+              <calcite-option label="Topographic" value="Topographic"></calcite-option>
             </calcite-select>
           </calcite-label>
           <calcite-label>
@@ -143,12 +145,24 @@
     "esri/widgets/Home"
   ], (Map, MapView, FeatureLayer, WebStyleSymbol, Basemap, TopFeaturesQuery, TopFilter, Home) => (async () => {
 
+    // Create a style for the indexLayer
+   const renderer = {
+      type: "simple",  // autocasts as new SimpleRenderer()
+      symbol: {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: [ 255, 128, 0, 0 ],
+        outline: {  // autocasts as new SimpleLineSymbol()
+          width: 1,
+          color: "black"
+        }
+      }
+    }; 
+
     const layer = new FeatureLayer({
       url:
-        "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/US_National_Parks_Annual_Visitation/FeatureServer/0",
+        "https://portal1-geo.sabu.mtu.edu/server/rest/services/Hosted/Spatial_Indexes_for_Map_Catalog/FeatureServer/0",
       outFields: ["*"],
-      renderer: await setRenderer(),
-      popupTemplate: createPopupTemplate()
+      renderer: renderer      
     });
 
     const map = new Map({
@@ -159,8 +173,8 @@
     const view = new MapView({
       container: "viewDiv",
       map: map,
-      center: [-120, 45],
-      zoom: 3
+      center: [-88.5694, 47.1211],
+      zoom: 7
     });
 
     let homeWidget = new Home({
@@ -171,47 +185,139 @@
     view.ui.move("zoom", "top-right");
     const layerView = await view.whenLayerView(layer);
 
-    async function setRenderer() {
-      const symbol = new WebStyleSymbol({
-        name: "park",
-        styleName: "Esri2DPointSymbolsStyle"
-      });
-
-      const cimSymbol = await symbol.fetchCIMSymbol();
-      cimSymbol.data.symbol.symbolLayers[0].size = 24;
-      cimSymbol.data.symbol.symbolLayers[1] = null;
-
-      return {
-        type: "simple",
-        symbol: cimSymbol
-      };
-    }
-
-    function createPopupTemplate() {
-      return {
-        title: "{Park}",
-        content: [{
+      
+      // Create a template for the popup
+      var template = {
+      // autocasts as new PopupTemplate()
+      title: "<font color='#008000'>{title}",  
+      content: [     
+            {
+          type: "media",
+          mediaInfos: [
+            {
+              title: "",
+              type: "image",
+              value: {sourceURL: 'https://portal1-geo.sabu.mtu.edu/images/historic_imgg/' + '{filename}' + '.jpg'}
+            }
+          ]          
+            },{
           type: "fields",
-          fieldInfos: [{
-            fieldName: "TOTAL",
-            label: "Total visits",
-            format: { digitSeparator: true }
-          }, {
-            fieldName: "F2018",
-            label: "2018",
-            format: { digitSeparator: true }
-          }, {
-            fieldName: "F2019",
-            label: "2019",
-            format: { digitSeparator: true }
-          }, {
-            fieldName: "F2020",
-            label: "2020",
-            format: { digitSeparator: true }
-          }]
-        }]
-      };
-    }
+          fieldInfos: [
+            {
+              fieldName: "datapub",
+              label: "Date"
+            },
+            {
+              fieldName: "publisher",
+              label: "Publisher"
+            },
+            {
+              fieldName: "filename",
+              label: "File Name"
+            },
+            {
+              fieldName: "theme",
+              label: "Theme"
+            },
+            {
+              fieldName: "south",
+              label: "South"
+            },
+            {
+              fieldName: "scale",
+              label: "Scale"
+            },
+            {
+              fieldName: "title",
+              label: "title"
+            },
+            {
+              fieldName: "edition",
+              label: "edition"
+            },
+            {
+              fieldName: "available",
+              label: "available"
+            },
+            {
+              fieldName: "physHold",
+              label: "physHold"
+            },
+            {
+              fieldName: "primeMer",
+              label: "primeMer"
+            },
+            {
+              fieldName: "projection",
+              label: "projection"
+            },
+            {
+              fieldName: "datePub",
+              label: "datePub"
+            },
+            {
+              fieldName: "color",
+              label: "color"
+            },
+            {
+              fieldName: "recId",
+              label: "recId"
+            },
+            {
+              fieldName: "note",
+              label: "note"
+            },
+            {
+              fieldName: "sheetId",
+              label: "sheetId"
+            },
+            {
+              fieldName: "digital ID",
+              label: "digita"
+            },
+            {
+              fieldName: "titleAlt",
+              label: "titleAlt"
+            },
+            {
+              fieldName: "digHold",
+              label: "Drive Location"
+            },
+            {
+              fieldName: "thumbURL",
+              label: "thumbURL"
+            },
+            {
+              fieldName: "miradorURL",
+              label: "miradorURL"
+            },
+            {
+              fieldName: "iiifURL",
+              label: "iiifURL"
+            },
+            {
+              fieldName: "location",
+              label: "location"
+            },
+            {
+              fieldName: "bathLines",
+              label: "bathLines"
+            },
+            {
+              fieldName: "bathInterv",
+              label: "bathInterv"
+            },
+            {
+              fieldName: "instCallNo",
+              label: "instCallNo"
+            },
+          ]
+        }, 
+      ]
+    };
+
+    // Set the popup template on the layer
+    layer.popupTemplate = template;    
 
     const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
     const controlYearEl = document.getElementById("control-year-el");
@@ -232,42 +338,51 @@
     let year = yearDefault;
 
     async function filterItems() {
-      const query = new TopFeaturesQuery({
+
+      var query = layer.createQuery();
+      //query.where = "theme = 'Nautical'";
+      query.outFields = [ '*' ];
+      //query.returnDistinctValues = false;
+      query.returnGeometry = true;
+
+      /*const query = new TopFeaturesQuery({
         topFilter: new TopFilter({
           topCount: count,
-          groupByFields: ["State"],
-          orderByFields: `${year} ${orderBy}`
+          groupByFields: ["theme"],
+          orderByFields: '${datepub} ${orderBy}'
         }),
-        orderByFields: `${year} ${orderBy}`,
-        outFields: ["State, TOTAL, F2018, F2019, F2020, Park"],
+        orderByFields: '${datePub} ${orderBy}',
+        outFields: ["title, datePub, theme, publisher, tags, fileName"],
         returnGeometry: true,
         cacheHint: false
-      });
+      });*/
 
       document.getElementById("result-list").innerHTML = "";
       document.getElementById("result-block").open = true;
 
-      const results = await layer.queryTopFeatures(query);
+      const results = await layer.queryFeatures(query);
       graphics = results.features;
+
+      console.log(graphics);
 
       graphics.forEach((result, index) => {
         const attributes = result.attributes;
         const item = document.createElement("calcite-list-item");
         const chip = document.createElement("calcite-chip");
-        chip.value = attributes.State;
+        chip.value = attributes.title;
         chip.slot = "content-end";
-        chip.scale = "s";
-        chip.innerText = attributes.State;
-        item.label = attributes.Park;
+        //chip.scale = "s";
+        //chip.innerText = attributes.title;
+        item.label = attributes.title;
         item.value = index;
-        item.description = `${attributes[yearDefault].toLocaleString()} visitors`;
+        //item.description = `${attributes[yearDefault].toLocaleString()} visitors`;
         item.addEventListener("click", () => resultClickHandler(result, index));
         item.appendChild(chip);
         document.getElementById("result-list").appendChild(item);
       });
 
       query.orderByFields = [""];
-      const objectIds = await layer.queryTopObjectIds(query);
+      const objectIds = await layer.queryObjectIds(query);
       layerView.filter = { objectIds };
 
       determineResetActionState();
@@ -278,9 +393,9 @@
       if (popup) {
         view.popup.open({
           features: [popup],
-          location: result.geometry
+          location: result.geometry.centroid
         });
-        view.goTo({ center: [result.geometry.longitude, result.geometry.latitude], zoom: 4 }, { duration: 400 });
+        view.goTo({ center: [result.geometry.centroid.longitude, result.geometry.centroid.latitude]}, { duration: 400 });
       }
     }
 
