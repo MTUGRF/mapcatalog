@@ -7,6 +7,7 @@
   <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/1.0.0-beta.81/calcite.css" />
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">  
   <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/dark/main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
@@ -51,7 +52,35 @@
     .bg-light {
       background: black !important;
       border-bottom: solid 2px black;
-    }    
+    }   
+
+    /*Searchbar*/
+
+    /*Search bar container*/
+    .container {   
+        margin-top: 5px;
+        width: 100%;                  
+     }
+
+    #search {
+      width: 50%;    
+      border-radius: 0px 0px 0px 0px;   
+      background-color:  black;
+      border-color: #767576;
+    } 
+
+    .btn-outline-warning {      
+      color: #000;
+      border-radius: 0px 0px 0px 0px; 
+      border-color: #FC0;
+      background-color: #FC0;        
+    }
+
+    .btn-outline-warning:hover {
+      color: #000;
+      border-color: #FC0;
+      background-color: #FC0;
+    }
 
     .calcite-tutorial {
       --calcite-ui-brand: #FC0;
@@ -89,9 +118,19 @@
     </div>
 </nav>
   <calcite-shell content-behind class="calcite-tutorial" style="height: auto;margin-top: 56px">
-    <calcite-shell-panel slot="primary-panel">
+    <calcite-shell-panel slot="primary-panel">       
       <calcite-panel>
-        <calcite-block heading="Filters" open>
+          <!-- Search Bar -->
+    <div class="container justify-content-center">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search items..." aria-label="Title Search" id="search" aria-describedby="basic-addon2" autocomplete="off">               
+                <div class="input-group-append"> <button class="btn btn-outline-warning btn-lg" type="button" id="submit" title="Search"><i class="fa fa-search"></i></button> </div>
+            </div>
+        </div>
+    </div>
+</div> 
+        <calcite-block heading="Filters" open style="margin-top:0px">
           <calcite-tooltip-manager slot="control">
             <calcite-action disabled icon="reset" id="control-reset-el"></calcite-action>
             <calcite-tooltip reference-element="control-reset-el" position="bottom">
@@ -107,7 +146,7 @@
           </calcite-label>
           <calcite-label>
             Select a Theme
-            <calcite-select id="control-year-el">
+            <calcite-select id="theme">
               <calcite-option label="All" value="1900"></calcite-option>
               <calcite-option label="Land Use" value="Land Use"></calcite-option>
               <calcite-option label="Mining Maps" value="Mining Maps"></calcite-option>
@@ -116,10 +155,10 @@
             </calcite-select>
           </calcite-label>
           <calcite-label>
-            Max parks per state
-            <calcite-slider id="control-count-per-state-el" label-ticks ticks="1" min="1" max="5"></calcite-slider>
-          </calcite-label>
-        </calcite-block>
+            Range Between Years
+            <calcite-slider id="control-count-per-state-el"   label-handles max-label="1979" max-value="1979" max="1979" min-value="1883"
+            min="1883" ticks="20"></calcite-slider>
+          </calcite-label>          
         <calcite-block collapsible heading="Results" id="result-block">
           <calcite-list id="result-list"></calcite-list>
         </calcite-block>
@@ -184,8 +223,8 @@
       view: view
     });
 
-    view.ui.add(homeWidget, "top-right");
-    view.ui.move("zoom", "top-right");
+    view.ui.add(homeWidget, "top-left");
+    view.ui.move("zoom", "top-left");
     const layerView = await view.whenLayerView(layer);
 
       
@@ -323,7 +362,7 @@
     layer.popupTemplate = template;    
 
     const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
-    const controlYearEl = document.getElementById("control-year-el");
+    const controlYearEl = document.getElementById("theme");
     const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
     const controlResetEl = document.getElementById("control-reset-el");
 
@@ -331,6 +370,11 @@
     controlYearEl.addEventListener("calciteSelectChange", async (event) => { year = event.target.value, filterItems() });
     controlCountPerStateEl.addEventListener("calciteSliderChange", async (event) => { count = event.target.value, filterItems() });
     controlResetEl.addEventListener("click", async () => resetFilters());
+
+    // When the user clicks the search button filter features
+    $( "#submit" ).click(function() {
+      filterItems();
+    });
 
     const countDefault = 1;
     const orderByDefault = "DESC"
@@ -341,8 +385,12 @@
     let year = yearDefault;
 
     async function filterItems() {
-
+      var searchVal = $( "#search" ).val();
       let query = layer.createQuery();
+      if (searchVal != '') {
+        query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%'";
+        console.log('query' + searchVal);
+      }
       //query.where = "theme = 'Nautical'";
       query.outFields = [ '*' ];
       //query.returnDistinctValues = false;
@@ -367,6 +415,7 @@
       graphics = results.features;
 
       console.log(graphics);
+
 
       graphics.forEach((result, index) => {
         const attributes = result.attributes;
