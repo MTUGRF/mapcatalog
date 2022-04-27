@@ -419,6 +419,7 @@
 
       graphics.forEach((result, index) => {
         const attributes = result.attributes;
+        console.log(attributes);
         const item = document.createElement("calcite-list-item");
         const chip = document.createElement("calcite-chip");
         chip.value = attributes.title;
@@ -427,7 +428,7 @@
         //chip.innerText = attributes.title;
         item.label = attributes.title;
         item.value = index;
-        //item.description = `${attributes[yearDefault].toLocaleString()} visitors`;
+        item.description = attributes.datapub;
         item.addEventListener("click", () => resultClickHandler(result, index));
         item.appendChild(chip);
         document.getElementById("result-list").appendChild(item);
