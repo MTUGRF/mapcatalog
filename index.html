@@ -93,7 +93,26 @@
       opacity:  0;
       margin-inline-end: .75rem;
     }  
+
+     #searchDiv {
+      float: right;
+      margin:  5px;
+      width:  auto;
+      border-color: #767576 !important;
+    }
+
+    .esri-input {
+      border: 1px solid #767576 !important;
+    }
+    .esri-search__submit-button {
+      background-color:  #FC0;
+      border:  solid 1px #FC0;
+    }
     
+    .esri-icon-search {
+      color: black !important;
+      font-weight: bold !important;
+    }
   </style>
 </head>
 
@@ -120,8 +139,9 @@
   <calcite-shell content-behind class="calcite-tutorial" style="height: auto;margin-top: 56px">
     <calcite-shell-panel slot="primary-panel">       
       <calcite-panel>
-          <!-- Search Bar -->
-    <div class="container justify-content-center">
+        <div id="searchDiv"></div>
+          
+    <!-- div class="container justify-content-center">
     <div class="row">
         <div class="col-md-8">
             <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search items..." aria-label="Title Search" id="search" aria-describedby="basic-addon2" autocomplete="off">               
@@ -129,7 +149,7 @@
             </div>
         </div>
     </div>
-</div> 
+</div>  -->
         <calcite-block heading="Filters" open style="margin-top:0px">
           <calcite-tooltip-manager slot="control">
             <calcite-action disabled icon="reset" id="control-reset-el"></calcite-action>
@@ -159,10 +179,11 @@
             <calcite-slider id="control-count-per-state-el"   label-handles max-label="1979" max-value="1979" max="1979" min-value="1883"
             min="1883" ticks="20"></calcite-slider>
           </calcite-label>          
-        <calcite-block collapsible heading="Results" id="result-block">
-          <calcite-list id="result-list"></calcite-list>
-        </calcite-block>
-     
+        <calcite-panel id="resultsDiv">
+        <h4 class="heading" id="result-block" slot="header-content" style="font-size: var(--calcite-font-size--1);">
+          Results
+        </h4>
+          <calcite-list id="result-list"></calcite-list>     
     </calcite-shell-panel>  
 
   </calcite-shell>
@@ -181,8 +202,9 @@
     "esri/Basemap",
     "esri/rest/support/TopFeaturesQuery",
     "esri/rest/support/TopFilter",
-    "esri/widgets/Home"
-  ], (Map, MapView, FeatureLayer, WebStyleSymbol, Basemap, TopFeaturesQuery, TopFilter, Home) => (async () => {
+    "esri/widgets/Home",
+    "esri/widgets/Search"
+  ], (Map, MapView, FeatureLayer, WebStyleSymbol, Basemap, TopFeaturesQuery, TopFilter, Home, Search) => (async () => {
 
     // Create a style for the indexLayer
    const renderer = {
@@ -225,6 +247,15 @@
 
     view.ui.add(homeWidget, "top-left");
     view.ui.move("zoom", "top-left");
+
+    var searchWidget = new Search({
+        view: view,
+        container: "searchDiv",
+        allPlaceholder: "Search maps by keyword",
+        includeDefaultSources: false,
+        locationEnabled: false,
+        sources: []
+      });
     const layerView = await view.whenLayerView(layer);
 
       
@@ -372,7 +403,7 @@
     controlResetEl.addEventListener("click", async () => resetFilters());
 
     // When the user clicks the search button filter features
-    $( "#submit" ).click(function() {
+    $( ".esri-search__submit-button" ).click(function() {
       filterItems();
     });
 
@@ -385,41 +416,26 @@
     let year = yearDefault;
 
     async function filterItems() {
-      var searchVal = $( "#search" ).val();
+
+      var searchVal = $( "#searchDiv-input" ).val();
+      console.log(searchVal);
       let query = layer.createQuery();
       if (searchVal != '') {
         query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%'";
-        console.log('query' + searchVal);
-      }
-      //query.where = "theme = 'Nautical'";
-      query.outFields = [ '*' ];
-      //query.returnDistinctValues = false;
-      query.returnGeometry = true;
-
-      /*const query = new TopFeaturesQuery({
-        topFilter: new TopFilter({
-          topCount: count,
-          groupByFields: ["theme"],
-          orderByFields: '${datepub} ${orderBy}'
-        }),
-        orderByFields: '${datePub} ${orderBy}',
-        outFields: ["title, datePub, theme, publisher, tags, fileName"],
-        returnGeometry: true,
-        cacheHint: false
-      });*/
+             
+      }      
 
       document.getElementById("result-list").innerHTML = "";
       document.getElementById("result-block").open = true;
 
       const results = await layer.queryFeatures(query);
-      graphics = results.features;
+      graphics = results.features;    
 
-      console.log(graphics);
-
+      document.getElementById("result-block").innerHTML = "Results (" + graphics.length + ")"; 
 
       graphics.forEach((result, index) => {
         const attributes = result.attributes;
-        console.log(attributes);
+        //console.log(attributes);
         const item = document.createElement("calcite-list-item");
         const chip = document.createElement("calcite-chip");
         chip.value = attributes.title;
