@@ -128,7 +128,7 @@
         </ul>
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href=" https://geospatial.asu.edu" target="_blank" rel="noopener">Geospatial Research Portal</a>
+                <a class="nav-link" href="https://portal1-geo.sabu.mtu.edu/mtuarcgis/home/" target="_blank" rel="noopener">Geospatial Research Portal</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="https://www.mtu.edu/social-sciences/" target="_blank" rel="noopener">Social Sciences</a>
@@ -404,7 +404,7 @@
 
     // When the user clicks the search button filter features
     $( ".esri-search__submit-button" ).click(function() {
-      filterItems();
+      filterItems();    
     });
 
     const countDefault = 1;
@@ -416,10 +416,10 @@
     let year = yearDefault;
 
     async function filterItems() {
-
       var searchVal = $( "#searchDiv-input" ).val();
       console.log(searchVal);
       let query = layer.createQuery();
+      query.returnGeometry = true;
       if (searchVal != '') {
         query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%'";
              
@@ -430,6 +430,16 @@
 
       const results = await layer.queryFeatures(query);
       graphics = results.features;    
+
+      // Zoom to the result of the features
+      if (graphics.length > 0) {
+        var extent = results.features[0].geometry.extent;
+        results.features.forEach(function(feature) {
+            extent = extent.union(feature.geometry.extent);
+        })
+
+        view.goTo({ center: extent.expand(1.3) }, { duration: 400 }); 
+   	  }
 
       document.getElementById("result-block").innerHTML = "Results (" + graphics.length + ")"; 
 
@@ -463,8 +473,10 @@
         view.popup.open({
           features: [popup],
           location: result.geometry.centroid
-        });
-        view.goTo({ center: [result.geometry.centroid.longitude, result.geometry.centroid.latitude]}, { duration: 400 });
+        });       
+        const extent = result.geometry.extent;
+        // when clicking on a record zoom to its extent
+        view.goTo({ center: extent.expand(4) }, { duration: 400 });
       }
     }
 
