@@ -8,9 +8,11 @@
    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">  
   <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/dark/main.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.0/viewer.css" integrity="sha512-tYobxYoCZxl0CejYCA8c4w8HRcg3wRoKaGYIQ/2ILqyB4vRqMd/Jmehxod1dQJ2uE/9rDY9pG48isM8SHEAwDQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.0/viewer.js" integrity="sha512-psAniLUS9J4A5KNQiSt9XMNeVSMx/Rz89vQJqeYlOIiTR5WK8zU/8EPwAKt+522eeV04QUzIwX5VrAW10FbdeQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>   
   <script src="https://js.arcgis.com/4.23/"></script>
   <style>
     
@@ -84,14 +86,14 @@
 
     .calcite-tutorial {
       --calcite-ui-brand: #FC0;
-      --calcite-ui-brand-hover: #008D52;
+      --calcite-ui-brand-hover: #008D52;     
     }
 
     .calcite-tutorial calcite-chip {
-      --calcite-ui-foreground-2: var(--calcite-ui-brand);
-      --calcite-ui-text-1: white;
-      opacity:  0;
-      margin-inline-end: .75rem;
+      --calcite-ui-foreground-2: var(--calcite-ui-foreground-2);
+      --calcite-ui-text-1: #FC0;
+      opacity:  1;
+      
     }  
 
      #searchDiv {
@@ -113,6 +115,40 @@
       color: black !important;
       font-weight: bold !important;
     }
+
+    h10 {
+      color: #FC0;
+    }
+
+    #image {
+  	  display: none;
+	}
+
+	.esri-popup__content img {
+		cursor: pointer;
+	}
+
+
+    /* Custom scrollbar */
+/* width */
+::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1 !important; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888 !important; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555 !important; 
+}
   </style>
 </head>
 
@@ -140,6 +176,11 @@
     <calcite-shell-panel slot="primary-panel">       
       <calcite-panel>
         <div id="searchDiv"></div>
+
+        <div>
+  <!-- Default Image for ViewerJS -->
+  <img id="image" src="" alt="Picture">
+</div>     
           
     <!-- div class="container justify-content-center">
     <div class="row">
@@ -168,6 +209,7 @@
             Select a Theme
             <calcite-select id="theme">
               <calcite-option label="All" value="1900"></calcite-option>
+              <calcite-option label="Fire Insurance Plans" value="Fire Insurance Plans"></calcite-option> 
               <calcite-option label="Land Use" value="Land Use"></calcite-option>
               <calcite-option label="Mining Maps" value="Mining Maps"></calcite-option>
               <calcite-option label="Nautical Charts" value="Nautical"></calcite-option>
@@ -180,7 +222,7 @@
             min="1883" ticks="20"></calcite-slider>
           </calcite-label>          
         <calcite-panel id="resultsDiv">
-        <h4 class="heading" id="result-block" slot="header-content" style="font-size: var(--calcite-font-size--1);">
+        <h4 class="heading" id="result-block" slot="header-content" style="font-size: var(--calcite-font-size--1); color: var(--calcite-ui-text-1);">
           Results
         </h4>
           <calcite-list id="result-list"></calcite-list>     
@@ -270,9 +312,9 @@
             {
               title: "",
               type: "image",
-              value: {sourceURL: 'https://portal1-geo.sabu.mtu.edu/images/historic_imgg/' + '{filename}' + '.jpg'}
+              value: {sourceURL: 'https://portal1-geo.sabu.mtu.edu/images/historic_images/' + '{filename}' + '.jpg'}
             }
-          ]          
+          ]        
             },{
           type: "fields",
           fieldInfos: [
@@ -417,13 +459,18 @@
 
     async function filterItems() {
       var searchVal = $( "#searchDiv-input" ).val();
-      console.log(searchVal);
+      var themeVal = $("#theme").val();
+      console.log(searchVal, themeVal);
       let query = layer.createQuery();
       query.returnGeometry = true;
       if (searchVal != '') {
         query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%'";
              
-      }      
+      }  
+
+      if (themeVal != '1900') {
+      	query.where = "theme = '" + themeVal + "'";
+      }    
 
       document.getElementById("result-list").innerHTML = "";
       document.getElementById("result-block").open = true;
@@ -441,22 +488,28 @@
         view.goTo({ center: extent.expand(1.3) }, { duration: 400 }); 
    	  }
 
-      document.getElementById("result-block").innerHTML = "Results (" + graphics.length + ")"; 
+      document.getElementById("result-block").innerHTML = "Results (<h10>" + graphics.length + "</h10>)"; 
 
       graphics.forEach((result, index) => {
         const attributes = result.attributes;
         //console.log(attributes);
         const item = document.createElement("calcite-list-item");
         const chip = document.createElement("calcite-chip");
-        chip.value = attributes.title;
-        chip.slot = "content-end";
-        //chip.scale = "s";
-        //chip.innerText = attributes.title;
+        const icon = document.createElement("calcite-icon");
+        icon.icon = "arrowLeft";
+        icon.scale = "s";
+        //item.slot = "content-end";
+        chip.scale = "s";
+        chip.innerText = "";
+        chip.icon = "map";
+        chip.icon.className = "icon-class";
+        chip.slot = "content-end";        
         item.label = attributes.title;
         item.value = index;
         item.description = attributes.datapub;
         item.addEventListener("click", () => resultClickHandler(result, index));
         item.appendChild(chip);
+       // item.appendChild(icon);
         document.getElementById("result-list").appendChild(item);
       });
 
@@ -477,7 +530,13 @@
         const extent = result.geometry.extent;
         // when clicking on a record zoom to its extent
         view.goTo({ center: extent.expand(4) }, { duration: 400 });
+
       }
+      var thumbUrl = result.attributes.filename;
+      var itemTitle = result.attributes.title;
+      document.getElementById('image').src='https://portal1-geo.sabu.mtu.edu/images/historic_images/' + thumbUrl + '.jpg';
+      document.getElementById('image').alt=itemTitle;
+      viewer.update(); 
     }
 
     function determineResetActionState() {
@@ -503,6 +562,36 @@
 
       filterItems();
     }
+
+     // setup a new viewer to display the map scans
+  var viewer = new Viewer(document.getElementById('image'), {
+    navbar: false,
+    inline: false,
+    toolbar: {
+      zoomIn: 1,
+      zoomOut: 1,
+      oneToOne: 1,
+      reset: 1,
+      prev: 0,
+      play: {
+        show: 1,
+        size: 'large',
+      },
+      next: 0,
+      rotateLeft: 1,
+      rotateRight: 1,
+      flipHorizontal: 1,
+      flipVertical: 1,
+    },
+    viewed() {
+      //viewer.zoomTo(1);
+    },
+  });  
+
+  // when the user clicks the thumbnail, open the viewer
+  $(document).on('click','.esri-popup__content img', function(){   	
+    viewer.show();
+  });
     filterItems();
   })());
 </script>
