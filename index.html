@@ -92,8 +92,7 @@
     .calcite-tutorial calcite-chip {
       --calcite-ui-foreground-2: var(--calcite-ui-foreground-2);
       --calcite-ui-text-1: #FC0;
-      opacity:  1;
-      
+      opacity:  1;      
     }  
 
      #searchDiv {
@@ -107,6 +106,11 @@
       border: 1px solid #767576 !important;
     }
     .esri-search__submit-button {
+      background-color:  #FC0;
+      border:  solid 1px #FC0;
+    }
+
+    .esri-search__submit-button:hover {
       background-color:  #FC0;
       border:  solid 1px #FC0;
     }
@@ -534,9 +538,15 @@
       }
       var thumbUrl = result.attributes.filename;
       var itemTitle = result.attributes.title;
-      document.getElementById('image').src='https://portal1-geo.sabu.mtu.edu/images/historic_images/' + thumbUrl + '.jpg';
-      document.getElementById('image').alt=itemTitle;
-      viewer.update(); 
+      updateViewer();
+    };
+
+    function updateViewer() {
+      var thumbUrl = view.popup.selectedFeature.attributes.filename; 
+      var itemTitle = view.popup.selectedFeature.attributes.title; 
+       document.getElementById('image').src='https://portal1-geo.sabu.mtu.edu/images/historic_images/' + thumbUrl + '.jpg';
+       document.getElementById('image').alt=itemTitle;    
+       viewer.update();
     }
 
     function determineResetActionState() {
@@ -564,34 +574,51 @@
     }
 
      // setup a new viewer to display the map scans
-  var viewer = new Viewer(document.getElementById('image'), {
-    navbar: false,
-    inline: false,
-    toolbar: {
-      zoomIn: 1,
-      zoomOut: 1,
-      oneToOne: 1,
-      reset: 1,
-      prev: 0,
-      play: {
-        show: 1,
-        size: 'large',
+    var viewer = new Viewer(document.getElementById('image'), {
+      navbar: false,
+      inline: false,
+      toolbar: {
+        zoomIn: 1,
+        zoomOut: 1,
+        oneToOne: 1,
+        reset: 1,
+        prev: 0,
+        play: {
+          show: 1,
+          size: 'large',
+        },
+        next: 0,
+        rotateLeft: 1,
+        rotateRight: 1,
+        flipHorizontal: 1,
+        flipVertical: 1,
       },
-      next: 0,
-      rotateLeft: 1,
-      rotateRight: 1,
-      flipHorizontal: 1,
-      flipVertical: 1,
-    },
-    viewed() {
-      //viewer.zoomTo(1);
-    },
-  });  
+      viewed() {
+        //viewer.zoomTo(1);
+      },
+    });  
 
   // when the user clicks the thumbnail, open the viewer
   $(document).on('click','.esri-popup__content img', function(){   	
+    updateViewer();
     viewer.show();
   });
+
+  view.on("click", (event) => {
+  // only include graphics from hurricanesLayer in the hitTest
+  const opts = {
+    include: layer
+  }
+
+  /*// check for a click on the index layer
+  view.hitTest(event, opts).then((response) => {
+    // check if a feature is returned from the index layer
+    if (response.results.length) {
+      const graphic = response.results[0].graphic;      
+     // updateViewer();
+    }
+  });*/
+});
     filterItems();
   })());
 </script>
