@@ -95,6 +95,10 @@
       opacity:  1;      
     }  
 
+    #control-reset-el {
+      color: #FC0;
+    }
+
      #searchDiv {
       float: right;
       margin:  5px;
@@ -129,7 +133,13 @@
 	}
 
 	.esri-popup__content img {
-		cursor: pointer;
+	  cursor: pointer;
+	}
+
+	.viewer-title {
+	  color: white;
+	  font-size: 14px;
+	  opacity: 1; 
 	}
 
 
@@ -179,9 +189,8 @@
   <calcite-shell content-behind class="calcite-tutorial" style="height: auto;margin-top: 56px">
     <calcite-shell-panel slot="primary-panel">       
       <calcite-panel>
-        <div id="searchDiv"></div>
-
-        <div>
+<div id="searchDiv"></div>
+<div>
   <!-- Default Image for ViewerJS -->
   <img id="image" src="" alt="Picture">
 </div>     
@@ -197,7 +206,7 @@
 </div>  -->
         <calcite-block heading="Filters" open style="margin-top:0px">
           <calcite-tooltip-manager slot="control">
-            <calcite-action disabled icon="reset" id="control-reset-el"></calcite-action>
+            <calcite-action disabled icon="filter" id="control-reset-el"></calcite-action>
             <calcite-tooltip reference-element="control-reset-el" position="bottom">
               Reset to defaults
             </calcite-tooltip>
@@ -212,7 +221,7 @@
           <calcite-label>
             Select a Theme
             <calcite-select id="theme">
-              <calcite-option label="All" value="1900"></calcite-option>
+              <calcite-option label="Choose Theme" value="none" selected="true"></calcite-option>
               <calcite-option label="Fire Insurance Plans" value="Fire Insurance Plans"></calcite-option> 
               <calcite-option label="Land Use" value="Land Use"></calcite-option>
               <calcite-option label="Mining Maps" value="Mining Maps"></calcite-option>
@@ -325,7 +334,7 @@
           type: "fields",
           fieldInfos: [
             {
-              fieldName: "Shape__Area",
+              fieldName: "datapub",
               label: "Date"
             },
             {
@@ -441,7 +450,7 @@ function setFeatureLayerFilter(expression) {
   layer.definitionExpression = expression;  
 }    
 
-    view.watch("zoom", function(newValue) {
+view.watch("zoom", function(newValue) {
   //var series = $('#setFilter').val();
   if (newValue < 6) {
     // at low zooms levels show all charts
@@ -462,7 +471,7 @@ function setFeatureLayerFilter(expression) {
   } else if (newValue > 14) {
     setFeatureLayerFilter("Shape__Area < 2000000");
   }
-  console.log("scale property changed: ", newValue);
+  //console.log("scale property changed: ", newValue);
 });
 
     // Set the popup template on the layer
@@ -481,7 +490,28 @@ function setFeatureLayerFilter(expression) {
     // When the user clicks the search button filter features
     $( ".esri-search__submit-button" ).click(function() {
       filterItems();    
-    });   
+    });
+
+    // When the user clicks the clear button query all features
+    $(document).on('click','.esri-search__clear-button', function(){   	
+    	var searchVal = $( "#searchDiv-input" ).val();	
+    	if (searchVal != '') {
+    		$( "#searchDiv-input" ).val("");
+    		console.log(searchVal);
+    		filterItems();
+    	}     
+ 	}); 
+
+	// if users hits enter perform the search   
+	$( ".esri-input" ).keyup(function(event) {
+	    // Number 13 is the "Enter" key on the keyboard
+	    if (event.keyCode === 13) {
+	      // Cancel the default action, if needed
+	      event.preventDefault();
+	      // Trigger the button element with a click
+	      $( ".esri-search__submit-button" ).click();
+	    }        
+	 }); 
    
     const countDefault = 1;
     const orderByDefault = "DESC"
@@ -498,11 +528,12 @@ function setFeatureLayerFilter(expression) {
       let query = layer.createQuery();
       query.returnGeometry = true;
       if (searchVal != '') {
-        query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%'";
-             
-      }  
+        query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%' OR datapub LIKE '%" + searchVal + "'";             
+      } else if (searchVal == '') {
+      	query.where = "1=1";
+      } 
 
-      if (themeVal != '1900') {
+      if (themeVal != 'none') {
       	query.where = "theme = '" + themeVal + "'";
       }    
 
@@ -574,9 +605,9 @@ function setFeatureLayerFilter(expression) {
     function updateViewer() {
       var thumbUrl = view.popup.selectedFeature.attributes.filename; 
       var itemTitle = view.popup.selectedFeature.attributes.title; 
-       document.getElementById('image').src='https://portal1-geo.sabu.mtu.edu/images/historic_images/' + thumbUrl + '.jpg';
-       document.getElementById('image').alt=itemTitle;    
-       viewer.update();
+      document.getElementById('image').src='https://portal1-geo.sabu.mtu.edu/images/historic_images/' + thumbUrl + '.jpg';
+      document.getElementById('image').alt=itemTitle;    
+      viewer.update();
     }
 
     function determineResetActionState() {
