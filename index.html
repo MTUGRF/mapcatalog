@@ -269,7 +269,9 @@
       url:
         "https://portal1-geo.sabu.mtu.edu/server/rest/services/Hosted/Spatial_Indexes_for_Map_Catalog/FeatureServer/0",
       outFields: ["*"],
-      renderer: renderer      
+      renderer: renderer,  
+      maxScale: 24,
+      minScale: 0    
     });
 
     const map = new Map({
@@ -323,7 +325,7 @@
           type: "fields",
           fieldInfos: [
             {
-              fieldName: "datapub",
+              fieldName: "Shape__Area",
               label: "Date"
             },
             {
@@ -339,12 +341,12 @@
               label: "Theme"
             },
             {
-              fieldName: "south",
-              label: "South"
-            },
-            {
               fieldName: "scale",
               label: "Scale"
+            },
+            {
+              fieldName: "source",
+              label: "Source"
             },
             {
               fieldName: "title",
@@ -435,6 +437,34 @@
       ]
     };
 
+function setFeatureLayerFilter(expression) {
+  layer.definitionExpression = expression;  
+}    
+
+    view.watch("zoom", function(newValue) {
+  //var series = $('#setFilter').val();
+  if (newValue < 6) {
+    // at low zooms levels show all charts
+    setFeatureLayerFilter("Shape__Area < ‎2206130383567.0");
+  } else if (newValue >= 6 && newValue < 8) {    
+    // as the users zooms in show only larger scale charts
+    setFeatureLayerFilter("Shape__Area < ‎471268823086"); 
+  } else if (newValue >= 8 && newValue < 9) {
+    setFeatureLayerFilter("Shape__Area < 154059814175");
+  }  else if (newValue >= 9 && newValue < 10) {
+    setFeatureLayerFilter("Shape__Area <‎ 20523650608");
+  } else if (newValue >= 10 && newValue < 11) {
+    setFeatureLayerFilter("Shape__Area < 6069706367");
+  } else if (newValue >= 11 && newValue < 12) {
+    setFeatureLayerFilter("Shape__Area < 21000000");
+  } else if (newValue >= 12 && newValue < 14) {
+    setFeatureLayerFilter("Shape__Area < 12000000");
+  } else if (newValue > 14) {
+    setFeatureLayerFilter("Shape__Area < 2000000");
+  }
+  console.log("scale property changed: ", newValue);
+});
+
     // Set the popup template on the layer
     layer.popupTemplate = template;    
 
@@ -451,8 +481,8 @@
     // When the user clicks the search button filter features
     $( ".esri-search__submit-button" ).click(function() {
       filterItems();    
-    });
-
+    });   
+   
     const countDefault = 1;
     const orderByDefault = "DESC"
     const yearDefault = "TOTAL"
