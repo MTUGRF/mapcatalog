@@ -202,13 +202,13 @@
               Reset to defaults
             </calcite-tooltip>
           </calcite-tooltip-manager>
-          <calcite-label>
+          <!-- <calcite-label>
             Data type, per state
             <calcite-radio-group id="control-visited-type-el" width="full">
               <calcite-radio-group-item value="DESC" checked>Most visited</calcite-radio-group-item>
               <calcite-radio-group-item value="ASC">Least visited</calcite-radio-group-item>
             </calcite-radio-group>
-          </calcite-label>
+          </calcite-label> -->
           <calcite-label>
             Select a Theme
             <calcite-select id="theme">
@@ -220,11 +220,11 @@
               <calcite-option label="Topographic" value="Topographic"></calcite-option>
             </calcite-select>
           </calcite-label>
-          <calcite-label>
+          <!-- <calcite-label>
             Range Between Years
             <calcite-slider id="control-count-per-state-el"   label-handles max-label="1979" max-value="1979" max="1979" min-value="1883"
             min="1883" ticks="20"></calcite-slider>
-          </calcite-label>          
+          </calcite-label>         -->  
         <calcite-panel id="resultsDiv">
         <h4 class="heading" id="result-block" slot="header-content" style="font-size: var(--calcite-font-size--1); color: var(--calcite-ui-text-1);">
           Results
@@ -468,15 +468,15 @@ function setFeatureLayerFilter(expression) {
     // Set the popup template on the layer
     layer.popupTemplate = template;    
 
-    const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
+   // const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
     const controlYearEl = document.getElementById("theme");
-    const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
-    const controlResetEl = document.getElementById("control-reset-el");
+   // const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
+    //const controlResetEl = document.getElementById("control-reset-el");
 
-    controlVisitedTypeEl.addEventListener("calciteRadioGroupChange", async (event) => { orderBy = event.target.value, filterItems() });
+  //  controlVisitedTypeEl.addEventListener("calciteRadioGroupChange", async (event) => { orderBy = event.target.value, filterItems() });
     controlYearEl.addEventListener("calciteSelectChange", async (event) => { year = event.target.value, filterItems() });
-    controlCountPerStateEl.addEventListener("calciteSliderChange", async (event) => { count = event.target.value, filterItems() });
-    controlResetEl.addEventListener("click", async () => resetFilters());
+  //  controlCountPerStateEl.addEventListener("calciteSliderChange", async (event) => { count = event.target.value, filterItems() });
+ //   controlResetEl.addEventListener("click", async () => resetFilters());
 
     // When the user clicks the search button filter features
     $( ".esri-search__submit-button" ).click(function() {
@@ -581,12 +581,12 @@ function setFeatureLayerFilter(expression) {
 
     function determineResetActionState() {
       if (count !== countDefault || orderBy !== orderByDefault || year !== yearDefault) {
-        controlResetEl.removeAttribute("disabled");
-        controlResetEl.indicator = true;
+      //  controlResetEl.removeAttribute("disabled");
+       // controlResetEl.indicator = true;
       }
       else {
-        controlResetEl.disabled = true;
-        controlResetEl.removeAttribute("indicator");
+       // controlResetEl.disabled = true;
+       // controlResetEl.removeAttribute("indicator");
       }
     }
 
