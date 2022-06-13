@@ -197,17 +197,8 @@
 <div>
   <!-- Default Image for ViewerJS -->
   <img id="image" src="" alt="Picture">
-</div>     
-          
-    <!-- div class="container justify-content-center">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search items..." aria-label="Title Search" id="search" aria-describedby="basic-addon2" autocomplete="off">               
-                <div class="input-group-append"> <button class="btn btn-outline-warning btn-lg" type="button" id="submit" title="Search"><i class="fa fa-search"></i></button> </div>
-            </div>
-        </div>
-    </div>
-</div>  -->
+</div>        
+   
         <calcite-block heading="Filters" open style="margin-top:0px">
           <calcite-tooltip-manager slot="control">
             <calcite-action disabled icon="filter" id="control-reset-el"></calcite-action>
@@ -559,7 +550,7 @@ view.watch("zoom", function(newValue) {
         });       
         const extent = result.geometry.extent;
         // when clicking on a record zoom to its extent
-        view.goTo({ center: extent.expand(4) }, { duration: 400 });
+        view.goTo({ center: extent.expand(6) }, { duration: 400 });
 
       }
       var thumbUrl = result.attributes.filename;
@@ -627,7 +618,7 @@ view.watch("zoom", function(newValue) {
     // Remove the zoom-to popup action
 //     view.popup.actions = []; 
 
-    // Actions for the popup
+    /*// Actions for the popup
     var requestAction = {
       // This text is displayed as a tooltip
       title: "Request Item",
@@ -649,7 +640,7 @@ view.watch("zoom", function(newValue) {
         window.open(
                   'https://docs.google.com/forms/d/e/1FAIpQLSeF2x2DCePE_m6HRsUSsf6pFaEhnMN-4cc3C79OFpvSIRv1mA/viewform?usp=pp_url&entry.1039013080=' + title + '(' + id + ')','"_blank"');
       }
-    });  
+    });  */
 
   // when the user clicks the thumbnail, open the viewer
   $(document).on('click','.esri-popup__content img', function(){   	
@@ -658,7 +649,7 @@ view.watch("zoom", function(newValue) {
   });
 
   view.on("click", (event) => {
-  // only include graphics from hurricanesLayer in the hitTest
+  // only include graphics from the layer in the hitTest
   const opts = {
     include: layer
   }
