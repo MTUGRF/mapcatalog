@@ -247,8 +247,7 @@
           Results
         </h4>
           <calcite-list id="result-list"></calcite-list>     
-    </calcite-shell-panel>  
-
+    </calcite-shell-panel>
   </calcite-shell>
 </div>
 
@@ -548,7 +547,7 @@ view.watch("zoom", function(newValue) {
       const objectIds = await layer.queryObjectIds(query);
       layerView.filter = { objectIds };
 
-      determineResetActionState();
+     // determineResetActionState();
     }
 
     function resultClickHandler(result, index) {
