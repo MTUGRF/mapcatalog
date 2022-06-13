@@ -128,6 +128,10 @@
       color: #FC0;
     }
 
+    h11 {
+      font-weight: bolder;
+    }
+
     #image {
   	  display: none;
 	}
@@ -169,7 +173,7 @@
 <body>
   <div class="calcite-theme-dark">
   <nav class="navbar navbar-expand-md navbar-light bg-light">
-  <a class="navbar-brand" href="https://mapgeoasu.github.io/3dexplorer/" target="_blank" rel="noopener">
+  <a class="navbar-brand" href="https://mtugrf.github.io/mapcatalog/" target="_blank" rel="noopener">
     <img src="husky.svg" width="50" height="50" class="d-inline-block align-top" alt="">
       &nbsp;Geospatial Research Facility Map Catalog
   </a>
@@ -212,12 +216,15 @@
             </calcite-tooltip>
           </calcite-tooltip-manager>
           <!-- <calcite-label>
-            Data type, per state
+            Georeferenced maps only
             <calcite-radio-group id="control-visited-type-el" width="full">
-              <calcite-radio-group-item value="DESC" checked>Most visited</calcite-radio-group-item>
-              <calcite-radio-group-item value="ASC">Least visited</calcite-radio-group-item>
+              <calcite-radio-group-item value="DESC" checked>Yes</calcite-radio-group-item>
+              <calcite-radio-group-item value="ASC">No</calcite-radio-group-item>
             </calcite-radio-group>
           </calcite-label> -->
+          <calcite-label html-for="georef" layout="inline">
+          <calcite-checkbox id="georef" scale="l"></calcite-checkbox> Georeferenced maps only
+          </calcite-label>
           <calcite-label>
             Select a Theme
             <calcite-select id="theme">
@@ -229,11 +236,12 @@
               <calcite-option label="Topographic" value="Topographic"></calcite-option>
             </calcite-select>
           </calcite-label>
-          <!-- <calcite-label>
+          <calcite-label>
             Range Between Years
-            <calcite-slider id="control-count-per-state-el"   label-handles max-label="1979" max-value="1979" max="1979" min-value="1883"
-            min="1883" ticks="20"></calcite-slider>
-          </calcite-label>         -->  
+            <!-- <calcite-slider id="control-count-per-state-el"   label-handles max-label="1979" max-value="1979" max="1979" min-value="1883"
+            min="1883" ticks="20"></calcite-slider> -->
+          </calcite-label>    
+          <calcite-input id="startYear" style="width: 45%; display: inline-block"></calcite-input> <h11> - </h11> <calcite-input id="endYear" style="width: 45%; display: inline-block"></calcite-input>      
         <calcite-panel id="resultsDiv">
         <h4 class="heading" id="result-block" slot="header-content" style="font-size: var(--calcite-font-size--1); color: var(--calcite-ui-text-1);">
           Results
@@ -319,7 +327,7 @@
       // Create a template for the popup
       var template = {
       // autocasts as new PopupTemplate()
-      title: "<font color='#FC0'>{title}",  
+      title: "<font color='#FC0'>{title}",        
       content: [     
             {
           type: "media",
@@ -475,15 +483,27 @@ view.watch("zoom", function(newValue) {
 });
 
     // Set the popup template on the layer
-    layer.popupTemplate = template;    
+    layer.popupTemplate = template;     
+     
 
    // const controlVisitedTypeEl = document.getElementById("control-visited-type-el");
-    const controlYearEl = document.getElementById("theme");
-   // const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
-    //const controlResetEl = document.getElementById("control-reset-el");
+    const controlThemeEl = document.getElementById("theme");
+    const controlGeoEl = document.getElementById("georef");
+    const controlYearEl = document.getElementById("endYear");
+   //const controlCountPerStateEl = document.getElementById("control-count-per-state-el");
+    const controlResetEl = document.getElementById("control-reset-el");
 
   //  controlVisitedTypeEl.addEventListener("calciteRadioGroupChange", async (event) => { orderBy = event.target.value, filterItems() });
-    controlYearEl.addEventListener("calciteSelectChange", async (event) => { year = event.target.value, filterItems() });
+    controlThemeEl.addEventListener("calciteSelectChange", async (event) => { theme = event.target.value, filterItems() });
+    controlGeoEl.addEventListener("calciteCheckboxChange", async (event) => { georef = event.target.value, filterItems() });
+    controlYearEl.addEventListener("calciteInputChange", async (event) => {
+     var startYearVal = $("#startYear").val();
+     var endYearVal = $("#startYear").val();
+     if (startYearVal != "" && endYearVal != "") {     
+     year = event.target.value, filterItems()
+     } 
+   });
+    
   //  controlCountPerStateEl.addEventListener("calciteSliderChange", async (event) => { count = event.target.value, filterItems() });
  //   controlResetEl.addEventListener("click", async () => resetFilters());
 
@@ -511,8 +531,8 @@ view.watch("zoom", function(newValue) {
 	      // Trigger the button element with a click
 	      $( ".esri-search__submit-button" ).click();
 	    }        
-	 }); 
-   
+	 });    
+
     const countDefault = 1;
     const orderByDefault = "DESC"
     const yearDefault = "TOTAL"
@@ -522,20 +542,41 @@ view.watch("zoom", function(newValue) {
     let year = yearDefault;
 
     async function filterItems() {
+      view.popup.close();
+      // Create an empty array of search strings
+      var searchStrings = [];
       var searchVal = $( "#searchDiv-input" ).val();
       var themeVal = $("#theme").val();
+      var startYearVal = $("#startYear").val();
+      var endYearVal = $("#endYear").val();
       console.log(searchVal, themeVal);
       let query = layer.createQuery();
       query.returnGeometry = true;
       if (searchVal != '') {
-        query.where = "Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%' OR datapub LIKE '%" + searchVal + "'";             
-      } else if (searchVal == '') {
+        var searchValString = "(Upper(title) LIKE '%" + searchVal.toUpperCase() + "%' OR Upper(tags) LIKE '%"+ searchVal.toUpperCase() + "%' OR datapub LIKE '%" + searchVal + "')"; 
+        searchStrings.push(searchValString);            
+      } /*else if (searchVal == '') {
       	query.where = "1=1";
-      } 
+      } */
 
       if (themeVal != 'none') {
-      	query.where = "theme = '" + themeVal + "'";
+      	var themeString = "theme = '" + themeVal + "'";
+        searchStrings.push(themeString);
       }    
+
+      if ($('#georef').prop("checked")) {
+        var geoString = "georef = 'Yes'";
+        searchStrings.push(geoString);
+      }
+
+      if (startYearVal != "" && endYearVal != "") {     
+        var yearString = "datapub BETWEEN " + "'" + startYearVal + "' AND " + "'" + endYearVal + "'";
+        searchStrings.push(yearString);
+      } 
+      // Create a query string from the searchStrings array
+      var queryString = searchStrings.join(" AND ");
+      // Execute the query from the query string
+      query.where = queryString;
 
       document.getElementById("result-list").innerHTML = "";
       document.getElementById("result-block").open = true;
@@ -556,14 +597,12 @@ view.watch("zoom", function(newValue) {
       document.getElementById("result-block").innerHTML = "Results (<h10>" + graphics.length + "</h10>)"; 
 
       graphics.forEach((result, index) => {
-        const attributes = result.attributes;
-        //console.log(attributes);
+        const attributes = result.attributes;        
         const item = document.createElement("calcite-list-item");
         const chip = document.createElement("calcite-chip");
         const icon = document.createElement("calcite-icon");
         icon.icon = "arrowLeft";
-        icon.scale = "s";
-        //item.slot = "content-end";
+        icon.scale = "s";        
         chip.scale = "s";
         chip.innerText = "";
         chip.icon = "map";
@@ -573,8 +612,7 @@ view.watch("zoom", function(newValue) {
         item.value = index;
         item.description = attributes.datapub;
         item.addEventListener("click", () => resultClickHandler(result, index));
-        item.appendChild(chip);
-       // item.appendChild(icon);
+        item.appendChild(chip);       
         document.getElementById("result-list").appendChild(item);
       });
 
@@ -611,13 +649,13 @@ view.watch("zoom", function(newValue) {
     }
 
     function determineResetActionState() {
-      if (count !== countDefault || orderBy !== orderByDefault || year !== yearDefault) {
-      //  controlResetEl.removeAttribute("disabled");
-       // controlResetEl.indicator = true;
+      if (searchVal =! '') {
+        controlResetEl.removeAttribute("disabled");
+        controlResetEl.indicator = true;
       }
       else {
-       // controlResetEl.disabled = true;
-       // controlResetEl.removeAttribute("indicator");
+        controlResetEl.disabled = true;
+        controlResetEl.removeAttribute("indicator");
       }
     }
 
@@ -659,6 +697,33 @@ view.watch("zoom", function(newValue) {
       },
     });  
 
+    // Remove the zoom-to popup action
+//     view.popup.actions = []; 
+
+    // Actions for the popup
+    var requestAction = {
+      // This text is displayed as a tooltip
+      title: "Request Item",
+      // The ID by which to reference the action in the event handler
+      id: "req-item",
+      // Sets the icon font used to style the action button
+      className: "esri-icon-launch-link-external"
+    };
+    // Adds the custom action to the popup.
+    view.popup.actions.push(requestAction);
+
+    // This event fires for each click on any action
+    view.popup.on("trigger-action", function(event){
+      // If the request item button is clicked launch the Google form
+      if(event.action.id === "req-item"){
+        // Get the file name from the current popup
+        var title = view.popup.selectedFeature.attributes.title;
+        var id = view.popup.selectedFeature.attributes.fid;
+        window.open(
+                  'https://docs.google.com/forms/d/e/1FAIpQLSeF2x2DCePE_m6HRsUSsf6pFaEhnMN-4cc3C79OFpvSIRv1mA/viewform?usp=pp_url&entry.1039013080=' + title + '(' + id + ')','"_blank"');
+      }
+    });  
+
   // when the user clicks the thumbnail, open the viewer
   $(document).on('click','.esri-popup__content img', function(){   	
     updateViewer();
@@ -670,15 +735,13 @@ view.watch("zoom", function(newValue) {
   const opts = {
     include: layer
   }
-
-  /*// check for a click on the index layer
+  // check for a click on the index layer
   view.hitTest(event, opts).then((response) => {
     // check if a feature is returned from the index layer
     if (response.results.length) {
-      const graphic = response.results[0].graphic;      
-     // updateViewer();
-    }
-  });*/
+      const graphic = response.results[0].graphic; 
+    }    
+  });
 });
     filterItems();
   })());
